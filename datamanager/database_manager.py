@@ -1,6 +1,8 @@
 """
 V 1.0
 Establishes DB connection
+StockConnector establishes connection with stock db
+CurrencyConnectro establishes connection with currency db
 """
 
 import sqlite3 as sql
