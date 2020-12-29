@@ -16,11 +16,21 @@ class WeekDays:
         #Return true if its weekday, doesn`t account national holidays
         weekDays = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
         weekDay = weekDays[dt.date.today().weekday()]
+
         today = dt.date.today().strftime('%Y.%m.%d')
         hour = dt.datetime.now().hour
-        work_time = (9,19)
         
-        if weekDay in weekDays[-2:]:
+        work_time = range(9,19)
+        
+        if weekDay in weekDays[-2:] or hour not in work_time:
+            
             return False
+
         else:
+    
             return True
+
+
+if __name__ == '__main__':
+
+    print(WeekDays.trading_day())
