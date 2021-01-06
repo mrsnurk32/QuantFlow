@@ -1,5 +1,5 @@
 """
-V 1.0
+V 1.1
 Establishes DB connection
 StockConnector establishes connection with stock db
 CurrencyConnectro establishes connection with currency db
@@ -7,41 +7,53 @@ CurrencyConnectro establishes connection with currency db
 
 import sqlite3 as sql
 
+from .file_checker import FileCheck
+
 
 class Connector:
     
-    #The class establishes connection with DB.
+    """
+    1. Establishes connection with db
+    2. Close connection with db
+    """
+    
+    def __init__(self, directory):
+        self.directory = directory
 
-    @staticmethod
-    def connect_to_db(directory):
 
-        sqlite3_conn = None
+    def __enter__(self):
 
-        try:
+        FileCheck().check_files
 
-            sqlite3_conn = sql.connect(directory)
-            return sqlite3_conn
+        self.conn = sql.connect(self.directory)
+        return self.conn
         
-        except Exception as err:
+    def __exit__(self,exc_type,exc_value, exc_tb):
 
-            print(err)
-            if sqlite3_conn is not None:
-                sqlite3_conn.close()
-
-
-class StockConnector:
-    # The class establishes connection with stock db
-    directory = 'asset_data/stock_data.db'
-
-    @property
-    def establish_connection(self):
-        return Connector().connect_to_db(self.directory)
+        if self.conn:
+            self.conn.close()
 
 
-class CurrencyConnector:
-    # The class establishes connection with stock db
-    directory = 'asset_data/currency_data.db'
+class Directrory:
+
+    """
+    1. Returns directory of DataBase
+    """
 
     @property
-    def establish_connection(self):
-        return Connector().connect_to_db(self.directory)
+    def get_path(self):
+        return self.directory
+
+
+
+class StockConnector(Directrory):
+    #path to stock_data
+    def __init__(self):
+        self.directory = 'asset_data/stock_data.db'
+
+
+class CurrencyConnector(Directrory):
+    #path to currency_data
+    def __init__(self):
+        self.directory = 'asset_data/currency_data.db'
+
