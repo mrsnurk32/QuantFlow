@@ -1,0 +1,35 @@
+import MetaTrader5 as mt5
+import pytz
+from datetime import datetime as dt
+from datetime import timedelta
+import pandas as pd
+
+from datamanager.modules.asset_config import AssetConfig
+from datamanager.modules.weekdays import WeekDays
+
+
+class DownloadAsset(AssetConfig):
+    
+    
+    def download_mt_asset(self,ticker, tf, conn, rows = 50000):
+
+        frame_header, mt_t_frame, timezone = self.time_frame(tf)
+
+        ymd = dt.today()
+        
+        if WeekDays.trading_day():
+
+           delta = timedelta(days = 1)
+           ymd = (ymd - delta)
+
+
+        utc_from = dt(ymd.year, ymd.month, ymd.day, tzinfo=timezone)
+        rates = mt5.copy_rates_from(ticker, mt_t_frame, utc_from, rows)
+        rates_frame = pd.DataFrame(rates)
+        rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s')
+
+        if len(rates_frame) < 1:
+            return "Check frame data ticker:{}".format(ticker)
+        ticker = ticker + '_' + frame_header
+        
+        rates_frame.to_sql(name=ticker,con = conn,index=False)
