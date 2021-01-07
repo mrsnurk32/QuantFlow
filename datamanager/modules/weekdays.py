@@ -29,6 +29,14 @@ class WeekDays:
         else:
     
             return True
+            
+
+class Russia(WeekDays):
+    pass
+
+
+class USA(WeekDays):
+    pass
 
 
 if __name__ == '__main__':
