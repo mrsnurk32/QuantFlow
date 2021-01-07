@@ -5,7 +5,7 @@ V 1.0
 
 
 import pandas as pd
-import wikipedia as wp
+
 
 
 class RussianStockTickers:
@@ -13,14 +13,5 @@ class RussianStockTickers:
     @property
     def get_tickers(self):
 
-        html = wp.page("Индекс РТС").html().encode("UTF-8")
-
-        try:
-            df = pd.read_html(html)[1]
-
-        except IndexError:
-            df = pd.read_html(html)[0]
-
-        df = df.iloc[1:]
-
-        return df[1].values
+        tickers = pd.read_csv('approved_tickers.csv')
+        return tickers.tickers.values
