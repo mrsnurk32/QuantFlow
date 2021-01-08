@@ -20,13 +20,13 @@ import time
 class UpdateAsset(AssetConfig):
 
 
-    async def update_mt_asset(self, ticker,tf, conn):
+    async def update_mt_asset(self, ticker,time_frame, conn):
 
 
         frame_header, mt_t_frame,\
-            timezone, interval = self.time_frame(tf, update = True)
+            timezone, interval = self.time_frame(time_frame, update = True)
 
-        ticker_ = f'{ticker}_{tf}'
+        ticker_ = f'{ticker}_{time_frame}'
 
         querry = conn.execute(
                  'SELECT * FROM {} ORDER BY time DESC LIMIT 1;'.format(ticker_)
@@ -46,7 +46,7 @@ class UpdateAsset(AssetConfig):
             print('Ticker: {} is up to date'.format(ticker))
             return None
 
-        print('Updating {} from {} to {} ({})'.format(ticker,utc_from, utc_to, tf))
+        print('Updating {} from {} to {} ({})'.format(ticker,utc_from, utc_to, time_frame))
 
 
 
@@ -55,7 +55,7 @@ class UpdateAsset(AssetConfig):
 
         print(rates)
         rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s')
-        ticker = f'{ticker}_{tf}'
+        ticker = f'{ticker}_{time_frame}'
 
 
 
