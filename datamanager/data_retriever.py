@@ -19,19 +19,16 @@ Creates query to access data
 class TickerList:
     #Returns stock list as list
 
-    @property
-    def ticker_list(self):
 
-        with self.connect_to_db() as c:
+    def ticker_list(self, conn):
             
-            table_lst = c.execute(
-                "SELECT name FROM sqlite_master WHERE type='table';")
+        table_lst = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table';")
 
-            table_lst = [i[0] for i in table_lst.fetchall() if i[0] != 'stock_info']
-            table_lst = [i.split('_')[0] for i in table_lst if '1h' in i]
+        table_lst = [i[0] for i in table_lst.fetchall()]
 
-            #Must return list of tickers that are located in DB
-            return table_lst
+        #Must return list of tickers that are located in DB
+        return table_lst
 
     
     def approved_tickers(self):
@@ -41,7 +38,7 @@ class TickerList:
 class GetFrame(TickerList):
     #Generates query to get stock info from DB
 
-    ACCEPTED_TIME_FRAMES = ('1h', '1D')
+    ACCEPTED_TIME_FRAMES = ('1h', 'd1', 'min5', 'min1')
 
     COLUMN_LIST = (
         'time','open', 'high', 'low',
@@ -62,10 +59,12 @@ class GetFrame(TickerList):
         super().__init__()
 
     #Checks if ticker is in DB
-    def ticker_is_valid(self, ticker, time_frame):
+    def ticker_is_valid(self, ticker, time_frame, conn):
 
-        if ticker not in self.ticker_list:
-            raise Exception('Ticker is not in the list')
+        ticker = f'{ticker}_{time_frame}'
+
+        if ticker not in self.ticker_list(conn):
+            raise Exception(f'{ticker} Ticker is not in the list')
 
         if time_frame not in self.ACCEPTED_TIME_FRAMES:
             raise Exception(f'Time frame for "{ticker} is not supported"')
@@ -80,9 +79,9 @@ class GetFrame(TickerList):
 
     
     #gets data and creates pandas frame. column_list takes list or '*' as parameter
-    def get_frame(self, ticker, rows=None, time_frame='1h', column_list = '*'):
+    def get_frame(self, conn, ticker, rows=None, time_frame='1h', column_list = '*'):
 
-        if self.ticker_is_valid(ticker, time_frame):
+        if self.ticker_is_valid(ticker, time_frame, conn):
 
             if type(column_list) is list:
 
@@ -103,10 +102,10 @@ class GetFrame(TickerList):
             if rows is not None:
                 querry += f' LIMIT {rows}'
 
-            with self.connect_to_db() as conn:
-                frame = pd.read_sql_query(querry, conn).sort_index(ascending = False)
-                frame.reset_index(drop = True, inplace = True)
-                frame.time = pd.to_datetime(frame.time)
+            
+            frame = pd.read_sql_query(querry, conn).sort_index(ascending = False)
+            frame.reset_index(drop = True, inplace = True)
+            frame.time = pd.to_datetime(frame.time)
 
-                return frame
+            return frame
             
