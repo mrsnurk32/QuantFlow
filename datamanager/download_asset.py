@@ -24,7 +24,9 @@ class DownloadAsset(AssetConfig):
     
     async def download_mt_asset(self,ticker, tf, conn, rows = 50000):
 
-        frame_header, mt_t_frame, timezone = self.time_frame(tf)
+        frame_header, mt_t_frame,\
+            timezone = self.time_frame(tf)
+            
         ymd = dt.today()
         
         if WeekDays.trading_day():
