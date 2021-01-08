@@ -26,6 +26,10 @@ class AssetConfig:
 
         self.timezone = pytz.timezone("Etc/UTC")
 
+    @property
+    def time_frames(self):
+        return self.TIME_FRAMES.keys()
+
     
     def get_upload_interval(self, time_frame):
         return self.TIME_INTERVAL[time_frame]
