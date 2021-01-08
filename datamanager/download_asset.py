@@ -10,16 +10,18 @@ from datamanager.modules.weekdays import WeekDays
 import asyncio
 import time 
 
+
 class DownloadAsset(AssetConfig):
     
+
     async def download(self,ticker, mt_t_frame, utc_from, rows):
-       
+
         return mt5.copy_rates_from(ticker, mt_t_frame, utc_from, rows)
+
     
     async def download_mt_asset(self,ticker, tf, conn, rows = 50000):
 
         frame_header, mt_t_frame, timezone = self.time_frame(tf)
-
         ymd = dt.today()
         
         if WeekDays.trading_day():
@@ -30,9 +32,7 @@ class DownloadAsset(AssetConfig):
         utc_from = dt(ymd.year, ymd.month, ymd.day, tzinfo=timezone)
        
         rates = await self.download(ticker, mt_t_frame, utc_from, rows)
-
         rates_frame = pd.DataFrame(rates)
-       
         rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s')
 
         if len(rates_frame) < 1:
