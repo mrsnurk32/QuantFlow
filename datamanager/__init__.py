@@ -5,3 +5,5 @@ from .download_asset import DownloadAsset
 from .update_asset import UpdateAsset
 
 from .file_checker import DB_Checker
+
+from .modules import *
