@@ -6,15 +6,12 @@
 import os
 import asyncio
 
-from datamanager.database_manager import Connector
-from datamanager.database_manager import StockConnector
-
-from datamanager.download_asset import DownloadAsset
-from datamanager.update_asset import UpdateAsset
+from datamanager import Connector, StockConnector, \
+    DownloadAsset ,UpdateAsset, DB_Checker
 
 from datamanager.modules.tickers import RussianStockTickers
 
-from datamanager.file_checker import DB_Checker
+
 
 import MetaTrader5 as mt5
 
