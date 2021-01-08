@@ -9,7 +9,8 @@ import asyncio
 from datamanager import Connector, StockConnector, \
     DownloadAsset ,UpdateAsset, DB_Checker
 
-from datamanager.modules.tickers import RussianStockTickers
+
+from datamanager import RussianStockTickers
 
 
 
