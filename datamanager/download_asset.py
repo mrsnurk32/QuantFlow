@@ -1,13 +1,16 @@
 import MetaTrader5 as mt5
+
 import pytz
 from datetime import datetime as dt
 from datetime import timedelta
+
 import pandas as pd
 
-from datamanager.modules.asset_config import AssetConfig
-from datamanager.modules.weekdays import WeekDays
+from .modules import AssetConfig
+from .modules import WeekDays
 
 import asyncio
+
 import time 
 
 
