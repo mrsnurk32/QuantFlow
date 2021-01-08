@@ -7,7 +7,8 @@ import os
 import asyncio
 
 from datamanager import Connector, StockConnector, \
-    DownloadAsset ,UpdateAsset, DB_Checker, AssetConfig
+    DownloadAsset ,UpdateAsset, DB_Checker, AssetConfig, \
+        DataChecker
 
 from datamanager import RussianStockTickers
 
@@ -46,7 +47,7 @@ if __name__ == "__main__":
                         tasks.append(
                             downloadloop.create_task(
                                 UpdateAsset().update_mt_asset(
-                                    ticker = ticker, tf = tf, conn = stock_conn
+                                    ticker = ticker, time_frame = tf, conn = stock_conn
                                 )   
                             )
                         )
@@ -57,7 +58,7 @@ if __name__ == "__main__":
                         tasks.append(
                             downloadloop.create_task(
                                 DownloadAsset().download_mt_asset(
-                                    ticker = ticker, tf = tf, conn = stock_conn
+                                    ticker = ticker, time_frame = tf, conn = stock_conn
                                 )   
                             )
                         )
@@ -71,6 +72,28 @@ if __name__ == "__main__":
             next_update = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours = 1)
             sleep_time = (next_update - now).total_seconds()
 
+            if dt.now().hour > 8:
+                continue
+
+            checker = DataChecker()
+            print('Checking Data!')
+            err_list = list()
+
+            for ticker in ticker_list:
+
+                for tf in time_frames:
+
+                    result = checker.init_check(
+                        conn = stock_conn, ticker = ticker, time_frame = tf
+                        )
+                    
+                    if result is False:
+                        err_list.append(ticker + '_' + tf)
+
+
+                    print(ticker,tf, result)
+            print('error list')
+            print(err_list)
             print(f'seconds {sleep_time} until next update')
 
             time.sleep(sleep_time)
