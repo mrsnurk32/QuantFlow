@@ -33,8 +33,11 @@ class UpdateAsset(AssetConfig):
 
         d = dt.today()
         utc_to = dt(d.year,d.month,d.day,d.hour - 1,tzinfo=timezone)
+        if utc_from > utc_to:
+            print('Ticker: {} is up to date'.format(ticker))
+            return None
 
-        print('Updating from {} to {} ({})'.format(utc_from, utc_to, tf))
+        print('Updating {} from {} to {} ({})'.format(ticker,utc_from, utc_to, tf))
 
 
 
