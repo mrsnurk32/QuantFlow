@@ -1,3 +1,9 @@
+"""
+V 1.0
+Module updates existing assets in the db.
+"""
+
+
 import MetaTrader5 as mt5
 import pytz
 from datetime import datetime as dt
@@ -17,7 +23,8 @@ class UpdateAsset(AssetConfig):
     async def update_mt_asset(self, ticker,tf, conn):
 
 
-        frame_header, mt_t_frame, timezone = self.time_frame(tf)
+        frame_header, mt_t_frame,\
+            timezone, interval = self.time_frame(tf, update = True)
 
         ticker_ = f'{ticker}_{tf}'
 
@@ -27,12 +34,14 @@ class UpdateAsset(AssetConfig):
 
 
         utc_from = (
-                dt.strptime(querry,'%Y-%m-%d %H:%M:%S') + timedelta(hours = 1)
+                dt.strptime(querry,'%Y-%m-%d %H:%M:%S') + timedelta(**interval)
             ).replace(tzinfo=timezone)
 
 
-        d = dt.today()
-        utc_to = dt(d.year,d.month,d.day,d.hour - 1,tzinfo=timezone)
+        d = dt.today() - timedelta(**interval)
+        utc_to = dt(d.year,d.month,d.day,d.hour, d.minute,tzinfo=timezone)
+
+
         if utc_from > utc_to:
             print('Ticker: {} is up to date'.format(ticker))
             return None
