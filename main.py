@@ -10,6 +10,7 @@ from datamanager.database_manager import Connector
 from datamanager.database_manager import StockConnector
 
 from datamanager.download_asset import DownloadAsset
+from datamanager.update_asset import UpdateAsset
 
 from datamanager.modules.tickers import RussianStockTickers
 
@@ -37,7 +38,15 @@ if __name__ == "__main__":
         for ticker in ticker_list:
 
             if DB_Checker.get_update(conn = stock_conn, ticker = ticker):
-                pass
+
+                tasks.append(
+                    downloadloop.create_task(
+                        UpdateAsset().update_mt_asset(
+                            ticker = ticker, tf = '1h', conn = stock_conn
+                        )   
+                    )
+                )
+                
 
             else:
 
