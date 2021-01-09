@@ -7,3 +7,5 @@ from .update_asset import UpdateAsset
 from .file_checker import DB_Checker, DataChecker
 
 from .modules import *
+
+from .data_retriever import GetFrame
