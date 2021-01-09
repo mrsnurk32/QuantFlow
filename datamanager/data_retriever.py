@@ -1,3 +1,9 @@
+
+"""
+V 1.0
+The module Retrieves asset data from database
+"""
+
 import pandas as pd
 import numpy as np
 import sqlite3 as sql
@@ -6,18 +12,11 @@ import matplotlib.pyplot as plt
 import os
 
 
-"""
-V 1.0
-Gets Ticker list
-Creates query to access data
-"""
-
-
-
-
-
 class TickerList:
-    #Returns stock list as list
+    
+    """
+        Retrieves ticker list from database, takes conn as parameter, which stands for db connection
+    """
 
 
     def ticker_list(self, conn):
@@ -37,6 +36,9 @@ class TickerList:
     
 class GetFrame(TickerList):
     #Generates query to get stock info from DB
+    """
+        Creates queries to extract data from database 
+    """
 
     ACCEPTED_TIME_FRAMES = ('1h', 'd1', 'min5', 'min1')
 
@@ -58,8 +60,9 @@ class GetFrame(TickerList):
     def __init__(self):
         super().__init__()
 
-    #Checks if ticker is in DB
+
     def ticker_is_valid(self, ticker, time_frame, conn):
+        #Checks if ticker is in DB
 
         ticker = f'{ticker}_{time_frame}'
 
@@ -71,8 +74,9 @@ class GetFrame(TickerList):
 
         return True
 
-    #Checks if column exists
+
     def validate_column(self, col, col_lst):
+        #Checks if column exists
 
         if col not in col_lst:
             raise Exception(f"Column {col} not found in data set \n {self.COLUMN_LIST} - list of acceptable columns")
@@ -95,14 +99,12 @@ class GetFrame(TickerList):
             else:
                 column_list = '*'
 
-
             ticker = ticker + '_' + time_frame
             querry = f'SELECT {column_list} FROM {ticker} ORDER BY rowid DESC'
 
             if rows is not None:
                 querry += f' LIMIT {rows}'
 
-            
             frame = pd.read_sql_query(querry, conn).sort_index(ascending = False)
             frame.reset_index(drop = True, inplace = True)
             frame.time = pd.to_datetime(frame.time)

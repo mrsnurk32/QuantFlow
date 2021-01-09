@@ -51,9 +51,11 @@ class UpdateAsset(AssetConfig):
 
 
         rates = mt5.copy_rates_range(ticker, mt_t_frame, utc_from, utc_to)
+        if len(rates) < 1:
+            print('Ticker: {} is up to date'.format(ticker))
+            return None
         rates_frame = pd.DataFrame(rates)
 
-        print(rates)
         rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s')
         ticker = f'{ticker}_{time_frame}'
 

@@ -73,6 +73,7 @@ if __name__ == "__main__":
             sleep_time = (next_update - now).total_seconds()
 
             if dt.now().hour > 8:
+                time.sleep(sleep_time)
                 continue
 
             checker = DataChecker()
