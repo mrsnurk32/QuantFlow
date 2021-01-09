@@ -8,6 +8,7 @@ __pycache__/
 
 #database
 datamanager/asset_data/fin_data.db
+asset_data/
 
 # Distribution / packaging
 .Python
@@ -113,6 +114,7 @@ ENV/
 env.bak/
 venv.bak/
 wavesenv/
+myenv/
 
 # Spyder project settings
 .spyderproject
