@@ -1,3 +1,9 @@
+"""
+V 1.0
+Module updates existing assets in the db.
+"""
+
+
 import MetaTrader5 as mt5
 import pytz
 from datetime import datetime as dt
@@ -14,12 +20,13 @@ import time
 class UpdateAsset(AssetConfig):
 
 
-    async def update_mt_asset(self, ticker,tf, conn):
+    async def update_mt_asset(self, ticker,time_frame, conn):
 
 
-        frame_header, mt_t_frame, timezone = self.time_frame(tf)
+        frame_header, mt_t_frame,\
+            timezone, interval = self.time_frame(time_frame, update = True)
 
-        ticker_ = f'{ticker}_{tf}'
+        ticker_ = f'{ticker}_{time_frame}'
 
         querry = conn.execute(
                  'SELECT * FROM {} ORDER BY time DESC LIMIT 1;'.format(ticker_)
@@ -27,17 +34,19 @@ class UpdateAsset(AssetConfig):
 
 
         utc_from = (
-                dt.strptime(querry,'%Y-%m-%d %H:%M:%S') + timedelta(hours = 1)
+                dt.strptime(querry,'%Y-%m-%d %H:%M:%S') + timedelta(**interval)
             ).replace(tzinfo=timezone)
 
 
-        d = dt.today()
-        utc_to = dt(d.year,d.month,d.day,d.hour - 1,tzinfo=timezone)
+        d = dt.today() - timedelta(**interval)
+        utc_to = dt(d.year,d.month,d.day,d.hour, d.minute,tzinfo=timezone)
+
+
         if utc_from > utc_to:
             print('Ticker: {} is up to date'.format(ticker))
             return None
 
-        print('Updating {} from {} to {} ({})'.format(ticker,utc_from, utc_to, tf))
+        print('Updating {} from {} to {} ({})'.format(ticker,utc_from, utc_to, time_frame))
 
 
 
@@ -46,7 +55,7 @@ class UpdateAsset(AssetConfig):
 
         print(rates)
         rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s')
-        ticker = f'{ticker}_{tf}'
+        ticker = f'{ticker}_{time_frame}'
 
 
 
