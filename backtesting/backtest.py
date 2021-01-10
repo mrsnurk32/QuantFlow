@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 
 
 class BackTester:
@@ -10,45 +10,96 @@ class BackTester:
         #stop loss and take profit are expressed with integers ex. 1 = 1%
         self.take_profit = take_profit
         self.stop_loss = stop_loss
-        
 
-    def test_strategy(self, frame):
-        #frame should be passed with Criteria column.
+
+    def simple_backtest(self, frame):
+        
+        """
+            The function back tests the strategy, the frame argument must contain Criteria column.
+            Parameters such as stop loss and take profit are neglected.
+            Strategy_returns column is returned once the fucntion is done.
+        """
 
         initial_price = frame.close.iloc[0]
-        frame['ret'] = frame.close.pct_change()
-        
-        #row_before checks if previus row is False or True
-        row_before = lambda row: frame.Criteria.iloc[row.Index-1]
-
-        #Checks if previous stop loss is lesser
-        validate_sl = lambda row, sl: row.close - (self.stop_loss/row.close*100) if row.close - (self.stop_loss/row.close*100) >= sl else sl
-        sl = None
-        
-        data = list()
-        
-        
-        for row in frame.itertuples():
-
-            if row.Criteria and not row_before(row):
-                sl = row.close - (self.stop_loss/row.close*100)
-                data.append(sl)
-            
-            
-            if row.Criteria and row_before(row):
-                sl = validate_sl(row,sl)
-                data.append(sl)
-                
-            
-            if not row.Criteria:
-                data.append(np.nan)
-                
-                
-        frame['stop_loss'] = data
-        frame['holding_asset'] = np.where((frame.Criteria) & (frame.close > frame.stop_loss),True,False)        
-        frame['Strategy_returns'] = initial_price * (1 + (frame['holding_asset'].shift(1) * frame['ret'] )).cumprod()      
+        frame['ret'] = frame.close.pct_change()    
+        frame['Strategy_returns'] = initial_price * (1 + (frame['Criteria'].shift(1) * frame['ret'] )).cumprod()      
                         
         return frame
+
+    def backtest(self, frame):
+
+        """
+            The function back tests the strategy, the frame argument must contain Criteria column.
+            Parameters such as stop loss and take profit are being considered. The function takes longer to execute, but gives more
+            accurate results. Strategy_returns column is returned once the fucntion is done.
+        """
+
+        # add feature that would account entry and exit points
+
+        frame['ret'] = frame.close.pct_change()
+        frame['Criteria_before'] = frame.Criteria.shift(1)
+        
+        stop_loss = self.stop_loss
+        
+        buy_trigger = False
+        sell_trigger = True
+        holding = False
+        
+        sl = None
+        
+        strategy_results = list()
+        initial_price = frame.close.iloc[0]
+
+        
+        for row in frame.itertuples(index = False):
+            
+            if not holding:
+                if row.Criteria and not row.Criteria_before:
+                    buy_trigger = True
+                    strategy_results.append(0)
+                    continue
+                
+                elif buy_trigger:
+                    buy_trigger = False
+                    holding = True
+                    sl = row.open * (1 - stop_loss)
+                    strategy_results.append(row.ret)
+                    continue
+                    
+                else:
+                    strategy_results.append(0)
+                
+            
+            else:
+                if not row.Criteria and row.Criteria_before:
+                    sell_trigger = True
+                    strategy_results.append(row.ret)
+                    continue
+                    
+                elif sell_trigger:
+                    sell_trigger = False
+                    holding = False
+                    strategy_results.append(0)
+                    sl = None
+                    continue
+                    
+                elif row.low < sl:
+                    holding = False
+                    strategy_results.append(-stop_loss)
+                    sl = None
+                    continue
+                    
+                else:
+                    strategy_results.append(row.ret)
+                        
+        frame['Strategy_results'] = strategy_results
+        frame['Criteria_'] = np.where(pd.isna(frame["Strategy_results"]), False, True)
+        frame['Strategy_returns'] = initial_price * (1 + (frame['Criteria_'].shift(1) * frame['Strategy_results'] )).cumprod()      
+
+        
+        del frame['Criteria_before']
+        return frame
+        
         
 
     @staticmethod
@@ -81,8 +132,15 @@ class BackTester:
             
         
     @staticmethod
-    def visualize(frame):
+    def visualize(frame, cols):
+
+
+        """
+            Visualize strategy, required columns in data frame are: close, Strategy_returns.
+        Indicator columns can be added as well.
+
+        """
         
         plt.rcParams["figure.figsize"] = [20, 10]
-        return frame[['close', 'Strategy_returns']].plot(grid=True, kind='line', title="Strategy vs Buy & Hold", logy=True)
+        return frame[cols].plot(grid=True, kind='line', title="Strategy vs Buy & Hold", logy=True)
 
