@@ -50,8 +50,10 @@ class BackTester:
         strategy_results = list()
         initial_price = frame.close.iloc[0]
 
-        
-        for row in frame.itertuples(index = False):
+        order_book = list()
+
+
+        for row in frame.itertuples():
             
             if not holding:
                 if row.Criteria and not row.Criteria_before:
@@ -64,6 +66,12 @@ class BackTester:
                     holding = True
                     sl = row.open * (1 - stop_loss)
                     strategy_results.append(row.ret)
+                    order_book.append({
+                        'Index':row.Index,
+                        'Date':row.time,
+                        'price':row.open,
+                        'status':'Buy'
+                    })
                     continue
                     
                 else:
@@ -81,11 +89,24 @@ class BackTester:
                     holding = False
                     strategy_results.append(0)
                     sl = None
+                    order_book.append({
+                        'Index':row.Index,
+                        'Date':row.time,
+                        'price':row.open,
+                        'status':'Sell'
+                    })
                     continue
                     
                 elif row.low < sl:
                     holding = False
                     strategy_results.append(-stop_loss)
+
+                    order_book.append({
+                        'Index':row.Index,
+                        'Date':row.time,
+                        'price':sl,
+                        'status':'Stop loss'
+                    })
                     sl = None
                     continue
                     
@@ -98,7 +119,7 @@ class BackTester:
 
         
         del frame['Criteria_before']
-        return frame
+        return frame, order_book
         
         
 
@@ -132,7 +153,7 @@ class BackTester:
             
         
     @staticmethod
-    def visualize(frame, cols):
+    def visualize(frame, cols = None, order_book = None):
 
 
         """
@@ -141,6 +162,32 @@ class BackTester:
 
         """
         
+        if cols is None:
+            cols = ['close', 'Strategy_returns']
+
         plt.rcParams["figure.figsize"] = [20, 10]
-        return frame[cols].plot(grid=True, kind='line', title="Strategy vs Buy & Hold", logy=True)
+        fig, ax = plt.subplots()
+
+        ax.plot(frame.time,frame.close, label = 'Stock price')
+        plt.title(label="Strategy vs Buy & Hold")
+
+        ax.plot(frame.time,frame.Strategy_returns,label = 'Strategy returns')
+
+
+        if order_book is not None:
+            book = pd.DataFrame(order_book)
+            book.Date = pd.to_datetime(book.Date)
+
+            purchases = book[book.status == 'Buy']
+            ax.scatter(list(purchases.Date.values), list(purchases.price.values), label = 'Buy', color = 'lawngreen', marker = '^')
+
+            sales = book[(book.status == 'Sell') | (book.status == 'Stop loss')]
+            ax.scatter(list(sales.Date.values), list(sales.price.values), label = 'Sale', color = 'red', marker = 'v')
+
+        ax.grid(True)
+
+        fig.autofmt_xdate()
+        plt.legend()        
+
+        return plt.show()
 
