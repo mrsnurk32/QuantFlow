@@ -66,14 +66,15 @@ if __name__ == "__main__":
             if len(tasks) > 0:
                 wait_tasks = asyncio.wait(tasks)
                 downloadloop.run_until_complete(wait_tasks)
-                downloadloop.close()
+                # downloadloop.close()
+                del downloadloop
 
             now = dt.now()
             next_update = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours = 1)
             sleep_time = (next_update - now).total_seconds()
 
             if dt.now().hour > 8:
-                time.sleep(sleep_time)
+                time.sleep(10)
                 continue
 
             checker = DataChecker()
