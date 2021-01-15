@@ -10,31 +10,11 @@ import sqlite3 as sql
 import time
 import matplotlib.pyplot as plt
 import os
+from modules import Tickers
 
-
-class TickerList:
-    
-    """
-        Retrieves ticker list from database, takes conn as parameter, which stands for db connection
-    """
-
-
-    def ticker_list(self, conn):
-            
-        table_lst = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table';")
-
-        table_lst = [i[0] for i in table_lst.fetchall()]
-
-        #Must return list of tickers that are located in DB
-        return table_lst
 
     
-    def approved_tickers(self):
-        raise NotImplemented
-
-    
-class GetFrame(TickerList):
+class GetFrame:
     #Generates query to get stock info from DB
     """
         Creates queries to extract data from database 
@@ -57,17 +37,15 @@ class GetFrame(TickerList):
         'time', 'close'
     )
 
-    def __init__(self):
-        super().__init__()
-
 
     def ticker_is_valid(self, ticker, time_frame, conn):
         #Checks if ticker is in DB
 
         ticker = f'{ticker}_{time_frame}'
 
-        if ticker not in self.ticker_list(conn):
-            raise Exception(f'{ticker} Ticker is not in the list')
+        if ticker not in Tickers(conn):
+            # raise Exception(f'{ticker} Ticker is not in the list')
+            return False
 
         if time_frame not in self.ACCEPTED_TIME_FRAMES:
             raise Exception(f'Time frame for "{ticker} is not supported"')
@@ -110,4 +88,6 @@ class GetFrame(TickerList):
             frame.time = pd.to_datetime(frame.time)
 
             return frame
-            
+
+        else:
+            return
