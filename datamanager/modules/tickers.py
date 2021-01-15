@@ -1,17 +1,20 @@
-"""
-V 1.0
-1. The class RussianStock Tickers gets ticker list of Russian Index RTC
-"""
-
-
 import pandas as pd
+from os.path import join, dirname, abspath
 
+
+__all__ = ['approved_tickers']
 
 
 class RussianStockTickers:
 
+    def __init__(self):
+        self.approved_tickers_path = join(dirname(dirname(abspath(__file__))), 'data_uploader/approved_tickers.csv')
+
     @property
     def get_tickers(self):
 
-        tickers = pd.read_csv('approved_tickers.csv')
+        tickers = pd.read_csv(self.approved_tickers_path)
         return tickers.tickers.values
+
+
+approved_tickers = RussianStockTickers().get_tickers
