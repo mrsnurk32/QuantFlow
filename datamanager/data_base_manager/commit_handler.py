@@ -2,7 +2,7 @@ __all__ = ['commit_handler']
 
 class MT_CommitHandler:
 
-    def __commit_download(self, conn, frame, ticker):
+    def __handle_commit(self, conn, frame, ticker):
         frame.to_sql(name=ticker,con = conn,index=False)
         print(ticker, ': was downloaded')
         return True
@@ -15,7 +15,6 @@ class MT_CommitHandler:
         
     
     def __call__(self, conn, frame, ticker, update=True):
-        
         if update:
             self.__commit_update(conn, frame, ticker)
             return True
