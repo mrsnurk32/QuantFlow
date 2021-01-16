@@ -43,11 +43,10 @@ def mt_interval(ticker,time_frame,conn):
     global asset_config
     configs = asset_config(time_frame, update = True)
 
-    print(ticker)
     #getting last ticker`s price date
-    ticker_ = f'{ticker}_{time_frame}'
+    # ticker_ = f'{ticker}_{time_frame}'
     query = conn.execute(
-                'SELECT * FROM {} ORDER BY time DESC LIMIT 1;'.format(ticker_)
+                f'SELECT time FROM {ticker} ORDER BY time DESC LIMIT 1;'
             ).fetchall()[0][0]
     #End
 
@@ -63,24 +62,25 @@ def mt_interval(ticker,time_frame,conn):
     utc_to = dt(d.year,d.month,d.day,d.hour, d.minute,tzinfo=configs['timezone'])
     #End
 
-    if utc_from > utc_to:
-        print('Ticker: {} is up to date'.format(ticker))
-        return
+    if utc_from < utc_to:
+        # print('Updating {} from {} to {} ({})'.format(ticker,utc_from, utc_to, time_frame))
 
-    print('Updating {} from {} to {} ({})'.format(ticker,utc_from, utc_to, time_frame))
+        del configs['timezone']
+        del configs['time_frame']
+        del configs['interval']
+        
+        configs |= dict(utc_from = utc_from, utc_to = utc_to, ticker = ticker)
+        result = get_data(**configs)
+        if result:
+            if len(result) < 1:
+                # print('Ticker: {} is up to date'.format(ticker))
+                return None
 
-    del configs['timezone']
-    del configs['time_frame']
-    del configs['interval']
-    
-    configs |= dict(utc_from = utc_from, utc_to = utc_to, ticker = ticker)
-    result = get_data(**configs)
-    
-    if len(result) < 1:
-        print('Ticker: {} is up to date'.format(ticker))
-        return None
+        return result
 
-    return result
+
+    # print('Ticker: {} is up to date'.format(ticker))
+    return
 
 
 
