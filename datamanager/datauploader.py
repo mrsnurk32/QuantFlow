@@ -6,34 +6,32 @@ import MetaTrader5 as mt5
 
 import time
 
-import threading
-__all__ = ['tasks']
+import cProfile
+__all__ = ['mt_uploader']
 
 
 
-def mt_uploader():
+def mt_update_db():
 
     if not mt5.initialize():
         print("initialize() failed, error code =", mt5.last_error())
         quit()
 
-    t1 = time.perf_counter()
     with Connector(MT_MOEX_Stocks().get_path) as conn:
+        
+        conn = conn.cursor()
 
-        for ticker in approved_tickers:
-            for time_frame in time_frames:
-                ticker_ = f'{ticker}_{time_frame}'
-                params = {'conn':conn,'ticker':ticker_}
-                
-                if ticker_ not in Tickers_in_db(conn):
-                    frame = format_data(mt_from(ticker, time_frame))
-                    params |= {'frame':frame, 'update':False}
 
-                else:
-                    data = mt_interval(ticker, time_frame, conn)
-                    if data is None: continue
-                    frame = format_data(data)
-                    params |= {'frame':frame, 'update':True}
+        for ticker in Tickers_in_db(conn):
+
+            params = {'conn':conn,'ticker':ticker}
+            time_frame = ticker.split('_')[-1]
+            
+            data = mt_interval(ticker, time_frame, conn)
+            if data:
+
+                frame = format_data(data)
+                params |= {'frame':frame, 'update':True}
 
                 commit_handler(**params)
 
@@ -41,6 +39,16 @@ def mt_uploader():
 # 1. Data Check
 # 2. Profiling
 # 3. Testing
-            
-    t2 = time.perf_counter()
-    print(t2 - t1)
+# 4. get rid off pandas in this package
+
+
+if __name__ == '__main__':
+    import cProfile, pstats
+    profiler = cProfile.Profile()
+    profiler.enable()
+
+    mt_update_db()
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats('cumtime')
+    stats.print_stats()
+# print('test')
