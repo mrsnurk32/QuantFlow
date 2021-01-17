@@ -1,17 +1,16 @@
-"""
-V 1.0
-1. The class RussianStock Tickers gets ticker list of Russian Index RTC
-"""
-
-
 import pandas as pd
 
+
+__all__ = ['RussianStockTickers']
 
 
 class RussianStockTickers:
 
     @property
-    def get_tickers(self):
+    def custom_ticker_list(self):
 
         tickers = pd.read_csv('approved_tickers.csv')
         return tickers.tickers.values
+
+    def rtc_index_lst(self):
+        pass
