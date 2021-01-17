@@ -8,7 +8,9 @@ CurrencyConnectro establishes connection with currency db
 import sqlite3 as sql
 
 from .file_checker import FileCheck
+from os.path import join, dirname, abspath
 
+__all__ = ['connector', 'stock_path']
 
 class Connector:
     
@@ -34,6 +36,7 @@ class Connector:
             self.conn.close()
 
 
+
 class Directrory:
 
     """
@@ -49,11 +52,13 @@ class Directrory:
 class StockConnector(Directrory):
     #path to stock_data
     def __init__(self):
-        self.directory = 'asset_data/stock_data.db'
+        self.directory = join(dirname(dirname(abspath(__file__))), 'asset_data/stock_data.db')
 
+stock_path = StockConnector().get_path
+connector = Connector(stock_path)
 
-class CurrencyConnector(Directrory):
-    #path to currency_data
-    def __init__(self):
-        self.directory = 'asset_data/currency_data.db'
+# class CurrencyConnector(Directrory):
+#     #path to currency_data
+#     def __init__(self):
+#         self.directory = 'asset_data/currency_data.db'
 
